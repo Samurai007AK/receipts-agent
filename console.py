@@ -28,6 +28,8 @@ import gateway
 
 ROOT = Path(__file__).resolve().parent
 APP_URL = os.environ.get("RECEIPTS_APP_URL", "http://127.0.0.1:8000").rstrip("/")
+# Where a human's browser reaches the company app (differs from APP_URL behind a proxy, e.g. on a HF Space).
+PUBLIC_APP_URL = os.environ.get("RECEIPTS_PUBLIC_APP_URL", APP_URL).rstrip("/")
 RUNS = ROOT / os.environ.get("RECEIPTS_RUNS", "runs")
 RUN_ID_RE = re.compile(r"[0-9A-Za-z_-]{1,64}")
 
@@ -888,4 +890,4 @@ init();
 </script>
 </body>
 </html>
-""".replace("__APP_URL__", json.dumps(APP_URL).replace("</", "<\\/"))
+""".replace("__APP_URL__", json.dumps(PUBLIC_APP_URL).replace("</", "<\\/"))

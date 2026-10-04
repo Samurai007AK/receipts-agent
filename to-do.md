@@ -5,7 +5,7 @@ Plan details live in [plan.md](plan.md).
 
 **Legend:** `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped (reason noted)
 
-**Current focus:** Phases 4–5 — browser tools and agent loop being built in parallel (wave 3)
+**Current focus:** wrap-up — finish running checks, README, unslop, push
 
 ---
 
@@ -50,17 +50,17 @@ Plan details live in [plan.md](plan.md).
 
 ## Phase 4 — Agent loop (happy path)
 - [x] Playwright tools: `goto`, `read_page` (accessibility tree + text), `click`, `fill` — all via gateway
-- [~] Tools: `http_get`, `note` (working memory), `ask_user`
-- [~] `agent.py`: Groq (`openai` SDK) tool-use loop with step budget + event log (JSONL)
-- [~] System prompt: goal-first, one proposed action per inbox item, verify every write
-- [~] Run Acme task end to end with hand-written contract → referee green
+- [x] Tools: `http_get`, `note` (working memory), `ask_user`
+- [x] `agent.py`: Groq (`openai` SDK) tool-use loop with step budget + event log (JSONL)
+- [x] System prompt: goal-first, one proposed action per inbox item, verify every write
+- [x] Run Acme task end to end with hand-written contract → referee green
 
 ## Phase 5 — Contract generation
-- [~] LLM writes contract from goal + `/openapi.json` (4 clause kinds only, validated against schema)
-- [~] Show contract as plain-English checklist; user approves/edits in CLI first
-- [~] Red-before-green: referee runs before acting; all-pass → "already done", no changes
-- [~] Only referee pass ends the run; referee fail → agent gets failing clauses and continues (bounded)
-- [~] Generated contract matches hand-written Acme contract
+- [x] LLM writes contract from goal + `/openapi.json` (4 clause kinds only, validated against schema)
+- [x] Show contract as plain-English checklist; user approves/edits in CLI first
+- [x] Red-before-green: referee runs before acting; all-pass → "already done", no changes
+- [x] Only referee pass ends the run; referee fail → agent gets failing clauses and continues (bounded)
+- [x] Generated contract matches hand-written Acme contract
 
 ## Phase 6 — Technical chaos
 - [x] `CHAOS` dict + `/chaos` page with checkboxes
@@ -87,21 +87,21 @@ Plan details live in [plan.md](plan.md).
 - [~] Receipt built from ledger + referee output, not LLM prose
 
 ## Phase 9 — Generalization task
-- [ ] Add data-catalog pages to sim app (tables, columns, owners, tags) + `/api/catalog`
+- [x] Add data-catalog pages to sim app (tables, columns, owners, tags) + `/api/catalog`
 - [ ] Task: "Find who owns `customers`, tag `email` as PII, notify the owner"
 - [ ] Runs with zero changes to `agent.py`, `gateway.py`, `referee.py` (git diff proves it)
 
 ## Phase 10 — Demo prep
 - [ ] README: what it is, architecture diagram, setup steps, how to run demo
-- [ ] Rehearse full 3-minute demo script 3× from `/api/reset`
-- [ ] Record backup video of a full successful run
-- [ ] Slides: problem, principle ("LLM proposes, code disposes"), architecture, criteria mapping
+- [-] Rehearse full 3-minute demo script 3× from `/api/reset` — dropped: user asked for a small, simple project (2026-10-04)
+- [-] Record backup video of a full successful run — dropped: user asked for a small, simple project (2026-10-04)
+- [-] Slides: problem, principle ("LLM proposes, code disposes"), architecture, criteria mapping — dropped: user asked for a small, simple project (2026-10-04)
 - [ ] Final commit + push
 
 ## Phase 11 — Stretch (only after Phases 0–10)
-- [~] Reliability matrix: 5 seeds × each hazard → pass-rate table
+- [-] Reliability matrix: 5 seeds × each hazard → pass-rate table — dropped: user asked for a small, simple project (2026-10-04)
 - [ ] Taint tracking for document-derived values
-- [ ] Site memory: UI-quirk notes file → run 2 takes fewer steps
+- [-] Site memory: UI-quirk notes file → run 2 takes fewer steps — dropped: user asked for a small, simple project (2026-10-04)
 - [ ] "Always allow vendor X under $Y" approvals saved as rules
 - [ ] Snapshot diff: assert nothing outside the contract changed
 
@@ -119,3 +119,7 @@ Plan details live in [plan.md](plan.md).
 - 2026-10-04 — Paused (usage limit). Verified: Phases 0, 1, 2, 3, chaos part of 6, console of 8. In flight: browser.py + agent.py subagents (Phases 4–5). Not started: Phases 7, 9, 10, 11 runs, README, unslop, push.
 - 2026-10-04 — Resumed after limit: browser.py and agent.py subagents continued; Phase 11 matrix runner dispatched.
 - 2026-10-04 — Phase 4: browser.py done (goto/read_page/click/fill_form, submit guard, detection lines, crash hook, video) — BROWSER VERIFIED + BROWSER HAZARDS VERIFIED.
+- 2026-10-04 — Phase 4 done: agent.py loop (Groq model pool, pacing, elision) — E2E ACME VERIFIED against the real app. Phase 5 done: generated contract red on seed, green when done right, catches wrong amount/date/missing row/notice; already-done task changes nothing (CONTRACT GEN VERIFIED). Fixed: Groq 'Parsing failed' 400s now retried across models.
+- 2026-10-04 — Phase 9 dispatched: data-catalog domain subagent (environment + policy only; agent core frozen). Phases 6–8 end-to-end gates running.
+- 2026-10-04 — Scope cut at user's request (small simple project): dropped Phase 10 rehearsals/video/slides and Phase 11 matrix + site-memory trial. Matrix runner script and site memory code stay in the repo.
+- 2026-10-04 — Phase 9: data catalog added to the app + column_tag policy (CATALOG VERIFIED, regressions green) without touching agent/gateway/referee/browser.

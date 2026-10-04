@@ -1,0 +1,14 @@
+.env
+.venv
+venv
+.git
+.unlazy
+.unlazy-hook-state.json
+.claude
+__pycache__
+*.db
+*.db-wal
+*.db-shm
+runs
+memory
+policy_overrides.json

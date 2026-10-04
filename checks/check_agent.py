@@ -277,11 +277,19 @@ def check_pool() -> None:
           and r["tool_calls"][0]["name"] == "finish", "tool_use_failed is retried with a corrective message")
     g = FakeGroq({m0: [http_error(400, body={"message": "x", "code": "tool_use_failed"}) for _ in range(3)]})
     p, _ = pool(g)
+    r = p.chat([{"role": "user", "content": "hi"}], [])
+    check(r["tool_calls"][0]["name"] == "finish" and g.calls[-1]["model"] != m0,
+          "a model that keeps producing malformed calls hands the turn to another model")
+    parse = http_error(400, body={"message": "Parsing failed. The model generated output that could not be parsed.",
+                                  "type": "invalid_request_error", "failed_generation": "<|call|>"})
+    g = FakeGroq({m: [parse for _ in range(5)] for m in agent.MODELS})
+    p, _ = pool(g)
     try:
         p.chat([{"role": "user", "content": "hi"}], [])
-        fail("tool_use_failed retried forever")
+        fail("malformed generations retried forever")
     except Exception as e:
-        check(len(g.calls) == 3 and "tool_use_failed" in str(e), "tool_use_failed retried at most 2 times")
+        check(len(g.calls) == 5 and "Parsing failed" in str(e),
+              "'Parsing failed' generations are retried across models, at most 4 times, then raised")
     g = FakeGroq({m0: [http_error(413, body={"message": "Request too large"})]})
     p, _ = pool(g)
     try:

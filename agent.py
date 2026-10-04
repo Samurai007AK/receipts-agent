@@ -296,11 +296,16 @@ class ModelPool:
                 continue
             except openai.BadRequestError as e:
                 text = _err_text(e)
-                if "tool_use_failed" in text and fixes < 2:
+                # Groq reports malformed generations as tool_use_failed or "Parsing failed ... failed_generation".
+                if re.search(r"tool_use_failed|failed_generation|parsing failed|output_parse_failed", text, re.I) \
+                        and fixes < 4:
                     fixes += 1
-                    msgs = msgs + [{"role": "user", "content":
-                                    "Your last reply was not a valid tool call. Reply again with valid tool calls: "
-                                    "only the listed tools, arguments as a JSON object matching the schema."}]
+                    if fixes == 1:
+                        msgs = msgs + [{"role": "user", "content":
+                                        "Your last reply was not a valid tool call. Reply again with valid tool calls: "
+                                        "only the listed tools, arguments as a JSON object matching the schema."}]
+                    else:  # same model keeps failing: give another model the turn
+                        self.state[model]["cool_until"] = self.clock() + 20
                     continue
                 if re.search(r"context|too large|too long|reduce the length|maximum.*tokens", text, re.I):
                     raise TooLarge(_short(text, 300)) from e

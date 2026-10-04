@@ -16,6 +16,13 @@ import httpx
 ROOT = Path(__file__).resolve().parent.parent
 PY = sys.executable
 
+# Check output goes through cp1252 pipes on Windows; never crash on a non-ASCII character.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
 
 def fail(msg: str) -> None:
     print(f"FAIL: {msg}", flush=True)
