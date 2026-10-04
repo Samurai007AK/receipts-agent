@@ -5,7 +5,7 @@ Plan details live in [plan.md](plan.md).
 
 **Legend:** `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped (reason noted)
 
-**Current focus:** Phases 1, 2, 3, 8 being built in parallel by subagents (wave 1)
+**Current focus:** Phases 4–5 — browser tools and agent loop being built in parallel (wave 3)
 
 ---
 
@@ -49,18 +49,18 @@ Plan details live in [plan.md](plan.md).
 - [x] `__main__` assert self-check: dup → SKIPPED, over-threshold → PARKED, unknown vendor → BLOCKED
 
 ## Phase 4 — Agent loop (happy path)
-- [ ] Playwright tools: `goto`, `read_page` (accessibility tree + text), `click`, `fill` — all via gateway
-- [ ] Tools: `http_get`, `note` (working memory), `ask_user`
-- [ ] `agent.py`: Groq (`openai` SDK) tool-use loop with step budget + event log (JSONL)
-- [ ] System prompt: goal-first, one proposed action per inbox item, verify every write
-- [ ] Run Acme task end to end with hand-written contract → referee green
+- [x] Playwright tools: `goto`, `read_page` (accessibility tree + text), `click`, `fill` — all via gateway
+- [~] Tools: `http_get`, `note` (working memory), `ask_user`
+- [~] `agent.py`: Groq (`openai` SDK) tool-use loop with step budget + event log (JSONL)
+- [~] System prompt: goal-first, one proposed action per inbox item, verify every write
+- [~] Run Acme task end to end with hand-written contract → referee green
 
 ## Phase 5 — Contract generation
-- [ ] LLM writes contract from goal + `/openapi.json` (4 clause kinds only, validated against schema)
-- [ ] Show contract as plain-English checklist; user approves/edits in CLI first
-- [ ] Red-before-green: referee runs before acting; all-pass → "already done", no changes
-- [ ] Only referee pass ends the run; referee fail → agent gets failing clauses and continues (bounded)
-- [ ] Generated contract matches hand-written Acme contract
+- [~] LLM writes contract from goal + `/openapi.json` (4 clause kinds only, validated against schema)
+- [~] Show contract as plain-English checklist; user approves/edits in CLI first
+- [~] Red-before-green: referee runs before acting; all-pass → "already done", no changes
+- [~] Only referee pass ends the run; referee fail → agent gets failing clauses and continues (bounded)
+- [~] Generated contract matches hand-written Acme contract
 
 ## Phase 6 — Technical chaos
 - [x] `CHAOS` dict + `/chaos` page with checkboxes
@@ -99,7 +99,7 @@ Plan details live in [plan.md](plan.md).
 - [ ] Final commit + push
 
 ## Phase 11 — Stretch (only after Phases 0–10)
-- [ ] Reliability matrix: 5 seeds × each hazard → pass-rate table
+- [~] Reliability matrix: 5 seeds × each hazard → pass-rate table
 - [ ] Taint tracking for document-derived values
 - [ ] Site memory: UI-quirk notes file → run 2 takes fewer steps
 - [ ] "Always allow vendor X under $Y" approvals saved as rules
@@ -115,3 +115,7 @@ Plan details live in [plan.md](plan.md).
 - 2026-10-04 — Phase 2 app built (app.py, 13 templates, workspace.json): APP CORE VERIFIED + APP CHAOS VERIFIED, screenshots reviewed. Phase 6 chaos flags + /chaos page live in the app; chaos_check.py dispatched.
 - 2026-10-04 — Phase 6: chaos_check.py proves all 4 technical hazards break a real browser save (CHAOS CHECK PASSED, 3 runs).
 - 2026-10-04 — Phase 3 done: gateway.py + policy.py (6 rules, idempotent proposal ids, parking, overrides) — GATEWAY RULES/FLOW/SELFTEST VERIFIED. Phase 2 manual check automated: real forms turn the Acme contract green (CORE INTEGRATION VERIFIED). Phase 8 console built and verified with a fake agent.
+- 2026-10-04 — Phases 4–5 dispatched: browser.py and agent.py subagents (wave 3).
+- 2026-10-04 — Paused (usage limit). Verified: Phases 0, 1, 2, 3, chaos part of 6, console of 8. In flight: browser.py + agent.py subagents (Phases 4–5). Not started: Phases 7, 9, 10, 11 runs, README, unslop, push.
+- 2026-10-04 — Resumed after limit: browser.py and agent.py subagents continued; Phase 11 matrix runner dispatched.
+- 2026-10-04 — Phase 4: browser.py done (goto/read_page/click/fill_form, submit guard, detection lines, crash hook, video) — BROWSER VERIFIED + BROWSER HAZARDS VERIFIED.
