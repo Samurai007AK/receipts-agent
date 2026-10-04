@@ -1,0 +1,11 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.db
+runs/
+.unlazy/
+.unlazy-hook-state.json
+.claude/settings.local.json
+memory/
+policy_overrides.json
