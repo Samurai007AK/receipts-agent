@@ -1,6 +1,6 @@
 """Receipts agent: turn a task into a success contract, do the work in a real browser, prove it.
 
-Flow (docs/CONTRACT.md section 5): contract (LLM-written from the live API, or loaded; approved by a
+Flow: contract (LLM-written from the live API, or loaded; approved by a
 human or --yes) -> red-before-green referee check -> work loop (Groq LLM; every tool call goes
 through gateway.dispatch) -> finish -> parked decisions -> independent referee (at most 2 feedback
 rounds) -> receipt. The LLM proposes; deterministic code (gateway, policy, referee) disposes.
@@ -599,7 +599,7 @@ def _guidance(p: dict, fields: dict) -> str:
 
 
 def _open_form_fields(ctx: Any, kind: str) -> list[str] | None:
-    """Field names of the `FORM record=<kind>` on the current page (snapshot format, CONTRACT 4); None if unknown."""
+    """Field names of the `FORM record=<kind>` on the current page (browser snapshot format); None if unknown."""
     browser = getattr(ctx, "browser", None)
     if browser is None:
         return None
@@ -627,7 +627,7 @@ def propose(ctx: Any, kind: str, fields: dict, source: str | None = None) -> str
         return "ERROR: fields must be an object mapping the form's field names to the exact values"
     kind = str(kind).strip().lower()
     names = _open_form_fields(ctx, kind)
-    # CONTRACT: propose is checked against the open record form first, so a proposal can never use
+    # propose is checked against the open record form first, so a proposal can never use
     # labels or invented keys (it would be refused at submit anyway, and pollute the receipt).
     if names == []:
         return f"ERROR: no FORM record={kind} on the current page. goto the page with that form first, then propose with its field names."
@@ -651,7 +651,7 @@ def wait_for_decisions(ctx: Any) -> str:
 
 @gateway.tool("finish", "control")
 def finish(ctx: Any, summary: str = "", site_notes: list | None = None) -> str:
-    # CONTRACT: finish also takes optional site_notes (saved like remember_site) so saving memory costs no extra LLM call.
+    # finish also takes optional site_notes (saved like remember_site) so saving memory costs no extra LLM call.
     for item in site_notes if isinstance(site_notes, list) else []:
         remember(item)
     ctx.finish_summary = str(summary or "")
@@ -750,7 +750,7 @@ def api_endpoints(base: str) -> str:
 
 def _probe(clauses: list[dict], base: str) -> list[str]:
     """Clauses that could never pass or would over-fit the wording: report them for the LLM to fix."""
-    # CONTRACT: a generated outbox/file text must be a short key (<= 3 words, <= 40 chars); a whole sentence
+    # a generated outbox/file text must be a short key (<= 3 words, <= 40 chars); a whole sentence
     # would fail a correct message worded differently and push the worker to write to the test.
     errors = [f"Clause {i}: 'text' must be a short distinctive key such as a record number, not {c['text']!r}."
               for i, c in enumerate(clauses, 1)
@@ -901,7 +901,7 @@ def referee_round(ctx: Ctx, clauses: list[dict], before: dict, rnd: int) -> tupl
     except Exception as e:  # without an after-snapshot side effects are unknown: that must not read as "none"
         changes = [{"table": "snapshot", "ref": "snapshot", "change": "unknown",
                     "row": f"could not take the after-snapshot: {type(e).__name__}: {e}"}]
-    # CONTRACT: allowed_refs is empty; anything the contract does not name counts as unexpected,
+    # allowed_refs is empty; anything the contract does not name counts as unexpected,
     # including writes the agent itself made, so the receipt never hides an unrequested change.
     unexpected = referee.unexpected_changes(changes, clauses)
     verdict = referee.verdict(results, gateway.proposals(ctx.run_id), unexpected)
@@ -926,14 +926,14 @@ def work(ctx: Ctx, llm: Any, clauses: list[dict], before: dict, max_steps: int, 
     rounds, told, free_nudge = 0, set(), True
     while ctx.work_calls < max_steps:
         messages[0]["content"] = work_system_prompt(clauses, workspace, ctx.notes, load_memory())
-        # CONTRACT: every call uses tool_choice=required (gpt-oss otherwise often answers in prose, wasting a
+        # every call uses tool_choice=required (gpt-oss otherwise often answers in prose, wasting a
         # call); the work ends only through finish. The nudge below remains for providers that ignore it.
         reply = ask(ctx, llm, messages, tools, WORK_MAX_TOKENS, "required")
         ctx.work_calls += 1
         messages.append(assistant_message(reply))
         if not reply["tool_calls"]:
             print(f"  (reply without a tool call: {_short(reply.get('content'), 100)!r})", flush=True)
-            # CONTRACT: the first reply without a tool call gets a free nudge; later ones spend the step budget.
+            # the first reply without a tool call gets a free nudge; later ones spend the step budget.
             if free_nudge:
                 free_nudge = False
                 ctx.work_calls -= 1
@@ -1047,7 +1047,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     ap.add_argument("--contract", help="hand-written contract JSON instead of generating one")
     ap.add_argument("--yes", action="store_true", help="auto-approve the contract")
     ap.add_argument("--approve-contract", choices=["cli", "ui"])
-    # CONTRACT: --decide defaults to ask in a terminal, else wait (never decide for a human silently).
+    # --decide defaults to ask in a terminal, else wait (never decide for a human silently).
     ap.add_argument("--decide", choices=["ask", "approve", "reject", "wait", "ui"])
     ap.add_argument("--run-id")
     ap.add_argument("--headed", action="store_true")

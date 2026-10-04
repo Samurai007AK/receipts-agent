@@ -58,8 +58,8 @@ def tool(name: str, tier: str) -> Callable[[Callable[..., str]], Callable[..., s
 
 
 def norm(value: Any) -> str:
-    """Canonical form of a field value (CONTRACT 2.4)."""
-    # CONTRACT: what counts as "the same money/date" is domain knowledge, so it is implemented in policy.norm.
+    """Canonical form of a field value."""
+    # what counts as "the same money/date" is domain knowledge, so it is implemented in policy.norm.
     return policy.norm(value)
 
 
@@ -167,7 +167,7 @@ def dispatch(ctx: Any, name: str, args: dict) -> str:
         print(f"gateway: could not record action {name}: {type(e).__name__}: {e}", file=sys.stderr)
     log = getattr(ctx, "log", None)
     if by_gateway and callable(log):
-        # CONTRACT: the gateway logs only outcomes it produced itself (unknown tool, out-of-scope,
+        # the gateway logs only outcomes it produced itself (unknown tool, out-of-scope,
         # tool exception) as a "gateway" event; normal tool results are the agent's to log.
         try:
             log("gateway", tool=name, tier=tier, status=status, detail=result[:300])
@@ -197,7 +197,7 @@ def _source_ctx(source: str | None) -> dict:
         if r.status_code != 404:
             r.raise_for_status()
             mail = r.json()
-            # CONTRACT: source_text is the email's subject and body; source_from its From address.
+            # source_text is the email's subject and body; source_from its From address.
             ctx["source_text"] = f"{mail.get('subject', '')}\n{mail.get('body', '')}"
             ctx["source_from"] = mail.get("from", "")
     return ctx
@@ -234,12 +234,12 @@ def propose(run_id: str, kind: str, fields: dict, source: str | None = None) -> 
     with _db() as con:
         stored = _load(con, pid)
     if source is None and stored:
-        source = stored["source"]  # CONTRACT: same intent re-proposed without a source keeps the stored one
+        source = stored["source"]  # same intent re-proposed without a source keeps the stored one
     force = False  # only "already in the system" may replace a human decision (see the upsert below)
     try:
         exists = kind in policy.EXISTS and policy.EXISTS[kind](fields)
         if exists and stored and stored["status"] in ("SUBMITTED", "DONE") and stored["run_id"] == run_id:
-            # CONTRACT: this run submitted it and the record exists -> DONE, not SKIPPED (other runs see SKIPPED).
+            # this run submitted it and the record exists -> DONE, not SKIPPED (other runs see SKIPPED).
             verdict, force = ("DONE", stored["rule_id"], stored["reason"]), True
         elif exists:
             verdict, force = ("SKIPPED", "already-in-system", f"{ref} is already in the system of record; nothing to do"), True
@@ -252,7 +252,7 @@ def propose(run_id: str, kind: str, fields: dict, source: str | None = None) -> 
                    f"policy check could not run ({type(e).__name__}: {e}); the company app may be down, try again shortly")
     status, rule_id, reason = verdict
     now = time.time()
-    # CONTRACT: re-proposing moves the proposal to the current run (so its guard_submit finds it)
+    # re-proposing moves the proposal to the current run (so its guard_submit finds it)
     # while a human decision (APPROVED/REJECTED and what followed) is kept unchanged.
     with _tx() as con:
         con.execute(
@@ -295,7 +295,7 @@ def _guard_result(allowed: bool, pid: str | None, status: str, rule_id: str | No
 
 def _not_submittable(p: dict) -> dict:
     pid, status = p["proposal_id"], p["status"]
-    # CONTRACT: a form that exactly matches a proposal which may not be submitted says why,
+    # a form that exactly matches a proposal which may not be submitted says why,
     # instead of a generic no-matching-proposal.
     if status == "DONE":
         return _guard_result(False, pid, "BLOCKED", "duplicate-submit",
@@ -384,7 +384,7 @@ def decide(proposal_id: str, decision: str, by: str = "human", always: bool = Fa
     if p is None:
         raise ValueError(f"unknown proposal {proposal_id}")
     if p["status"] != "PARKED":
-        # CONTRACT: deciding an already-decided proposal again is a no-op (double clicks); others are errors.
+        # deciding an already-decided proposal again is a no-op (double clicks); others are errors.
         if p["decided_by"]:
             return p
         raise ValueError(f"proposal {proposal_id} is {p['status']}; only PARKED proposals can be decided")

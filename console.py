@@ -1,4 +1,4 @@
-"""Operator console for Receipts (docs/CONTRACT.md section 6).
+"""Operator console for Receipts.
 
 Starts agent runs as child processes, streams their events.jsonl to a single inline web page,
 relays contract approval and parked-action decisions, and shows the final receipt.
@@ -73,7 +73,7 @@ def agent_cmd() -> list[str]:
         return [sys.executable, "agent.py"]
     if raw.startswith("["):
         return [str(part) for part in json.loads(raw)]
-    # CONTRACT: a non-JSON value is shell-split; on Windows without POSIX escapes so backslash paths survive,
+    # a non-JSON value is shell-split; on Windows without POSIX escapes so backslash paths survive,
     # then one layer of surrounding quotes is removed from each token.
     parts = shlex.split(raw, posix=os.name != "nt")
     return [p[1:-1] if len(p) >= 2 and p[0] == p[-1] and p[0] in "\"'" else p for p in parts]
@@ -220,7 +220,7 @@ def decide(proposal_id: str, body: DecisionIn) -> dict:
 
 @app.post("/api/reset")
 def reset() -> dict:
-    # CONTRACT: reset also stops agent runs this console started, so a live agent cannot write into fresh state.
+    # reset also stops agent runs this console started, so a live agent cannot write into fresh state.
     stopped = []
     with LOCK:
         for run_id, proc in PROCS.items():

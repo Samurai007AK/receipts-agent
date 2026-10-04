@@ -3,7 +3,7 @@
 Deliberately independent of the agent: it imports nothing from gateway, policy,
 browser or agent, uses no LLM, and opens its own fresh HTTP client for every
 evaluation. It re-queries the system of record and judges each contract clause
-on what it observes there. See docs/CONTRACT.md section 3.
+on what it observes there.
 """
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ _MISSING = object()
 # ---------------------------------------------------------------- normalization
 
 def _norm(value: object) -> str:
-    """Canonical comparison form (CONTRACT 2.4, reimplemented locally for independence)."""
+    """Canonical comparison form (reimplemented locally for independence)."""
     if value is None:
         return ""
     if isinstance(value, bool):
@@ -283,7 +283,7 @@ def _check_outbox(client: httpx.Client, clause: dict) -> tuple[bool, object, dic
 
 
 def _check_file(clause: dict) -> tuple[bool, object, dict]:
-    # CONTRACT: file evidence has no HTTP status, so status is None and request reads "READ <path>".
+    # file evidence has no HTTP status, so status is None and request reads "READ <path>".
     # Matching is case-insensitive with whitespace collapsed, like the other "contains" checks.
     rel = clause["path"]
     evidence = {"request": f"READ {rel}", "status": None, "body_excerpt": ""}
@@ -411,7 +411,7 @@ def _ref_hits(ref: object, clause: dict, fields: tuple[str, ...]) -> bool:
         return False  # an empty ref would 'appear' in everything
     if str(clause.get("ref", "")).strip().casefold() == r:
         return True
-    # CONTRACT: outbox refs are "notify:<to>"; an outbox clause names them through its `to` address.
+    # outbox refs are "notify:<to>"; an outbox clause names them through its `to` address.
     if r.startswith("notify:") and str(clause.get("to", "")).strip().casefold() == r[len("notify:"):]:
         return True
     token = re.compile(rf"(?<![\w-]){re.escape(r)}(?![\w-])")
@@ -436,7 +436,7 @@ def unexpected_changes(changes: list[dict], clauses: list[dict], allowed_refs=()
 
 def verdict(results: list[dict], proposals: list[dict], unexpected: list[dict]) -> dict:
     """VERIFIED / VERIFIED_WITH_EXCEPTIONS / FAILED from referee results and the gateway's proposals."""
-    # CONTRACT: "failures" holds the failed results no proposal excuses; "unexpected" is added so a
+    # "failures" holds the failed results no proposal excuses; "unexpected" is added so a
     # FAILED caused only by side effects still says why. Excused failures are listed in "exceptions".
     exceptions: list[dict] = []
     failures: list[dict] = []
@@ -446,7 +446,7 @@ def verdict(results: list[dict], proposals: list[dict], unexpected: list[dict]) 
         clause = res.get("clause") or {}
         related = [p for p in proposals if isinstance(p, dict) and _ref_hits(p.get("ref"), clause, ("path",))]
         excuse = next((p for p in related if str(p.get("status", "")).upper() in EXCUSING), None)
-        # CONTRACT: a matching proposal that was allowed/approved/submitted/done means the agent did attempt
+        # a matching proposal that was allowed/approved/submitted/done means the agent did attempt
         # this work, so an earlier blocked attempt with the same ref cannot excuse the failure.
         attempted = any(str(p.get("status", "")).upper() not in EXCUSING for p in related)
         if excuse is None or attempted:

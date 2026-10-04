@@ -9,3 +9,13 @@ runs/
 .claude/settings.local.json
 memory/
 policy_overrides.json
+
+# local working notes and build tooling (not part of the project)
+plan.md
+to-do.md
+docs/CONTRACT.md
+deploy/
+scripts/deploy_space.py
+checks/node_ship.py
+docs/img/console-live*.png
+docs/evidence/example-contract.json

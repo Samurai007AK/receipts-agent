@@ -22,7 +22,7 @@ from checks._servers import ROOT, check, fail, isolated_env, stub_app  # noqa: E
 EVENT_TYPES = {"run_started", "contract_proposed", "contract_approved", "contract_rejected", "referee_pre", "step",
                "observation", "detected", "recovery", "verified", "proposal", "parked", "decision", "llm", "referee",
                "receipt", "run_finished", "error",
-               "gateway"}  # CONTRACT: gateway.dispatch logs its own refusals as type "gateway"
+               "gateway"}  # gateway.dispatch logs its own refusals as type "gateway"
 ACME = json.loads((ROOT / "contracts" / "acme_invoice.json").read_text(encoding="utf-8"))
 INVOICE = {"vendor": "Acme Corp", "invoice_no": "INV-1042", "amount": "1240.00", "due_date": "2026-11-02"}
 UMBRELLA = {"vendor": "Umbrella Corp", "invoice_no": "INV-UC-5521", "amount": "8200.00", "due_date": "2026-11-15"}

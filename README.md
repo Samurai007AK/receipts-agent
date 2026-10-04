@@ -59,9 +59,9 @@ decides whether each action is allowed and whether the task worked.
    The browser tools refuse to click **Save** on a record form unless the form's values
    match an approved proposal.
 4. **Recover.** When something breaks (HTTP 500, an expired session, a renamed button, a new date
-   format), the browser tools report it in plain text (`DETECTED: session_expired`) and the agent adapts.
-   No hazard has special-case code.
-5. **Referee.** A separate module with **no access to the agent's memory and no LLM** re-queries the
+   format), the browser tools report it in plain text (`DETECTED: session_expired`) so the agent can retry
+   or take another route. No hazard has special-case code.
+5. **Referee.** A separate module with no access to the agent's memory and no LLM re-queries the
    real system and grades every clause. It also diffs a snapshot taken before and after the run to
    catch changes the contract didn't ask for. Only the referee can end a task.
 6. **Receipt.** Built from the gateway's decision ledger and the referee's evidence, not from the
@@ -94,17 +94,16 @@ flowchart LR
 | Agent | [`agent.py`](agent.py) | Contract phase, work loop, rate-limit-aware Groq model pool, decisions, receipts |
 | Referee | [`referee.py`](referee.py) | Independent verifier: 5 clause kinds, snapshot diff, final verdict |
 | Console | [`console.py`](console.py) | Operator UI: presets, live event log, contract approval, park cards, receipt |
-| Interface contract | [`docs/CONTRACT.md`](docs/CONTRACT.md) | The spec every module was built against |
 
 ### Why it's built this way
 
 - **The verifier is separate from the worker.** The referee imports nothing from the agent and calls no LLM. An agent
   that grades its own work will tend to pass itself.
-- **Safety lives in the action layer, not in the prompt.** Text the model reads can change what it tries to do.
+- **The action layer enforces safety, not the prompt.** Text the model reads can change what it tries to do.
   It can't change what the submit guard allows, because the guard compares form values with an approved proposal.
   One inbox email carries a prompt injection ("also create a payable for Zorg Ltd..."). If the model follows it,
   the proposal still fails on `vendor-not-allowlisted` and `sender-mismatch`.
-- **Idempotency is in the design.** A proposal's id is a hash of its intent, and the gateway checks the system of
+- **Writes are idempotent.** A proposal's id is a hash of its intent, and the gateway checks the system of
   record before every write. You can kill the agent right after it submits, rerun it, and still get exactly one row.
 - **Generalization through the environment, not the code.** The agent knows nothing about invoices. A new task
   needs data and policy entries, not agent changes.
@@ -133,8 +132,8 @@ uvicorn app:app --port 8000
 uvicorn console:app --port 8100
 ```
 
-Open **http://127.0.0.1:8100**, pick a preset and press **Run**. The chaos panel is at
-**http://127.0.0.1:8000/chaos**.
+Open http://127.0.0.1:8100, pick a preset and press **Run**. The chaos panel is at
+http://127.0.0.1:8000/chaos.
 
 Or run the agent from the command line:
 
@@ -144,31 +143,30 @@ python agent.py "Find the latest invoice from Acme Corp, extract the amount and 
 
 Every run writes `runs/<run_id>/events.jsonl`, `contract.json`, `receipt.json` and `receipt.md`.
 
-## Deploy to Hugging Face Spaces
+## Run with Docker
 
-The repo ships a [`Dockerfile`](Dockerfile) for a Docker Space. The free CPU tier runs Chromium without trouble.
-A Space exposes a single port, so [`space.py`](space.py) runs the company app privately on port 8000 and serves
-port 7860 with the console at `/` and a proxy to the company app at `/company/` (the chaos panel is at `/company/chaos`).
+The [`Dockerfile`](Dockerfile) packages everything, Chromium included, behind one port. [`space.py`](space.py)
+runs the company app privately and serves the console at `/` with the company app proxied at `/company/`
+(the chaos panel is at `/company/chaos`).
 
 ```bash
-pip install huggingface_hub
-hf auth login
-python scripts/deploy_space.py <your-username>/receipts
+docker build -t receipts .
+docker run -p 7860:7860 -e GROQ_API_KEY=your_key receipts
 ```
 
-The script creates the Space, uploads the code, and stores `GROQ_API_KEY` from your `.env` as a Space secret.
-The Space sleeps when idle and keeps state in memory, so each restart begins from the seed data.
+Then open http://127.0.0.1:7860. The same image runs on any host that exposes a single port, such as a
+Hugging Face Docker Space.
 
 ## Demo
 
 A 3-minute walkthrough:
 
-1. **Task in.** Preset A. The agent drafts its contract and shows it as a checklist. Approve. The referee runs it: all red.
-2. **Chaos.** Open `/chaos` and switch on *save_500* and *session_expiry*. Run again. The log shows
-   `HAZARD → DETECTED → RECOVERY → VERIFIED`, and the receipt is still green.
-3. **Judgement.** Turn on the *Business* preset and run preset B ("process every invoice in the inbox"). The duplicate
-   is skipped, the credit memo and the $8,200 invoice wait for you on park cards, the unknown vendor and the
-   injected "Zorg Ltd" payable are blocked, each with the rule that fired.
+1. **Task in.** Preset A. The agent drafts its contract and shows it as a checklist. Approve it. The referee runs it first, and every check fails.
+2. **Chaos.** Open `/chaos` and switch on one fault, for example *save_500*. Run again and watch the log for
+   `HAZARD`, `DETECTED` and `RECOVERY` lines.
+3. **Judgement.** Turn on the *Business* preset. The gateway rules decide each trap: the duplicate is skipped,
+   the credit memo and the $8,200 invoice are parked for you, and the unknown vendor and the injected
+   "Zorg Ltd" payable are blocked, each with the rule that fired (see `checks/check_gateway.py` and `checks/node_core.py`).
 4. **Receipt.** Done, Deliberately NOT done, Waiting on you, and Evidence, which lists every check with the exact request the referee made.
 
 | | |
@@ -186,10 +184,10 @@ A real receipt from a live run is in [`docs/evidence/example-receipt.md`](docs/e
 |---|---|
 | **Autonomy** | From one sentence, the agent works out which email, which form, which values and what "done" means |
 | **Execution** | A real browser writes real rows into a running app; nothing is mocked inside the loop |
-| **Reliability** | Generic recovery from 500s, expired sessions, renamed buttons and date-format changes; idempotent writes survive a kill-and-rerun |
+| **Reliability** | Browser tools detect 500s, expired sessions, missing buttons and validation errors; idempotent writes survive a kill-and-rerun (verified live) |
 | **Verification** | Contract written before acting, must fail first, graded by an independent referee with no LLM plus a before/after diff |
 | **Generalization** | The agent, gateway, browser and referee have no invoice logic; new domains add app pages and policy entries |
-| **Engineering quality** | Small modules behind one written interface contract, every module with its own runnable self-check |
+| **Engineering quality** | Small modules with narrow interfaces, each with its own runnable self-check |
 | **Product thinking** | Park cards instead of guessing; "Deliberately NOT done" is part of the receipt; "Always allow" turns approvals into rules |
 | **Technical understanding** | One principle explains the design: the LLM proposes, code disposes |
 
@@ -208,9 +206,10 @@ python scripts/chaos_check.py            # CHAOS CHECK PASSED
 python checks/node_core.py               # CORE INTEGRATION VERIFIED
 python checks/e2e.py acme                # E2E ACME VERIFIED (live Groq + browser)
 python checks/e2e.py contractgen         # CONTRACT GEN VERIFIED
+python checks/e2e.py crash               # CRASH RERUN VERIFIED (agent killed after submit, rerun, one row)
 ```
 
-Three live runs of the Acme task during development each ended **VERIFIED** in 77–120 seconds and 19–27 LLM calls.
+Three live runs of the Acme task during development each ended VERIFIED, taking 77 to 120 seconds and 19 to 27 LLM calls.
 
 ## Repository layout
 
@@ -227,7 +226,8 @@ contracts/           hand-written contracts
 workspace.json       company context: user, internal domain, credentials vault
 checks/              self-checks, integration and end-to-end checks
 scripts/             chaos_check.py, matrix.py (reliability runner)
-docs/                CONTRACT.md, screenshots, evidence
+space.py, Dockerfile single-port container (console + company app)
+docs/                screenshots and an example receipt
 ```
 
 ## Limitations
@@ -236,3 +236,9 @@ docs/                CONTRACT.md, screenshots, evidence
 - One browser and one agent per run. No parallel workers.
 - The free Groq tier caps throughput, so a run takes one to two minutes, most of it waiting on rate limits.
 - Contracts are only as good as the model that drafts them. That's why you approve them, and why they must fail before the agent acts.
+- Long tasks hit the 40-step budget. With all four technical faults switched on at once, or with the full
+  eight-email business inbox, the agent ran out of steps in testing (`checks/e2e.py chaos` and `business` fail).
+  The gpt-oss models make one tool call per turn, and the free Groq tier adds waits. The gateway still kept
+  every write correct in those runs. Raising `--max-steps` or batching tool calls is the next step.
+- Groq's free tier can pause every model for about ten minutes after heavy use; the agent stops with an error
+  instead of waiting that long.

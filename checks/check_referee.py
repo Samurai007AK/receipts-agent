@@ -1,4 +1,4 @@
-"""Self-check for referee.py (docs/CONTRACT.md section 3).
+"""Self-check for referee.py.
 
   .venv\\Scripts\\python checks\\check_referee.py               -> prints REFEREE VERIFIED last
   .venv\\Scripts\\python checks\\check_referee.py independence  -> prints REFEREE INDEPENDENT last

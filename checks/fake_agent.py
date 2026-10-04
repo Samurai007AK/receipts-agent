@@ -3,7 +3,7 @@
 Usage (as the console spawns it):
     python checks/fake_agent.py "<task>" --run-id ID --decide ui --approve-contract ui
 
-Writes RECEIPTS_RUNS/<id>/events.jsonl in the docs/CONTRACT.md section 5 format, waits for the console's
+Writes RECEIPTS_RUNS/<id>/events.jsonl in the same format as agent.py, waits for the console's
 contract_decision.json, parks the Umbrella INV-UC-5521 $8,200 invoice through the real gateway, waits for the
 human decision, posts the approved records via the stub company app's /stub/* hooks, and writes receipt.json.
 No LLM. RECEIPTS_APP_URL must point at checks/stub_company.py.

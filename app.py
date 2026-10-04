@@ -1,6 +1,6 @@
 """Brightline Co. company app: AP inbox, AP ledger, notifications, data catalog and chaos controls.
 
-A small simulated back office for the Receipts agent (docs/CONTRACT.md section 1).
+A small simulated back office for the Receipts agent.
 All state lives in memory and is restored by `POST /api/reset`. Handlers are `async`
 so every request runs on the event loop and state mutations never interleave.
 """
@@ -240,7 +240,7 @@ def catalog_columns(table: str = "", column: str = "") -> list[dict]:
 
 def catalog_snapshot() -> dict:
     """{table: {column: {type, description, tags}}} for the columns whose metadata differs from the seed."""
-    # CONTRACT: rev 1 snapshots an untouched catalog as {} (checks/check_app.py asserts it), so the catalog
+    # Snapshots an untouched catalog as {} (checks/check_app.py asserts it), so the catalog
     # section lists only columns changed since the seed. referee.diff flattens it to "<table>.<column>"
     # refs: tagging customers.email shows up as an "added" change with ref customers.email.
     out: dict = {}
@@ -336,7 +336,7 @@ def parse_amount(text: str) -> float | None:
         value = float(cleaned)
     except ValueError:
         return None
-    # CONTRACT: "must parse" — NaN/inf parse in Python but are not money, so they are rejected too.
+    # "must parse" — NaN/inf parse in Python but are not money, so they are rejected too.
     return round(value, 2) if math.isfinite(value) else None
 
 

@@ -1,4 +1,4 @@
-"""Self-check for the company app (docs/CONTRACT.md section 1).
+"""Self-check for the company app.
 
 Usage: .venv\\Scripts\\python checks\\check_app.py core|chaos
 Starts app.py on a free port with isolated state and exercises it over HTTP.

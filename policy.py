@@ -2,7 +2,7 @@
 
 Everything that knows about invoices, vendors, money, dates, mail and the data catalog lives here;
 gateway.py is a generic engine that calls into this module. Rules reach the company
-app only through its read-only JSON API (docs/CONTRACT.md 1.3), with short timeouts.
+app only through its read-only JSON API, with short timeouts.
 """
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ CENT = Decimal("0.01")
 
 def app_url() -> str:
     """Company app base URL, read at call time so checks can set the env after import."""
-    # CONTRACT: APP_URL is the import-time value; every request re-reads RECEIPTS_APP_URL.
+    # APP_URL is the import-time value; every request re-reads RECEIPTS_APP_URL.
     return os.environ.get("RECEIPTS_APP_URL", APP_URL).rstrip("/")
 
 
@@ -135,7 +135,7 @@ def money_in(text: str) -> list[Decimal]:
 
 
 def norm(value: Any) -> str:
-    """Canonical form (CONTRACT 2.4): money -> '%.2f', dates -> ISO, else whitespace-collapsed lowercase."""
+    """Canonical form: money -> '%.2f', dates -> ISO, else whitespace-collapsed lowercase."""
     if value is None:
         return ""
     if isinstance(value, bool):
@@ -204,7 +204,7 @@ def _domain(address: str) -> str:
 
 def override_for(kind: str, rule_id: str, fields: dict) -> tuple[dict, float | None]:
     """(match, limit) an 'always allow' of this proposal stores, and that later proposals are matched against."""
-    # CONTRACT: the gateway is domain-free, so policy decides what "always allow" covers:
+    # the gateway is domain-free, so policy decides what "always allow" covers:
     # over-threshold -> this vendor up to this amount; credit-note -> this vendor;
     # external-recipient -> this recipient domain; anything else -> these exact fields.
     vendor = _clean(fields.get("vendor"))
@@ -227,7 +227,7 @@ def _overridden(kind: str, rule_id: str, fields: dict, amount: Decimal | None = 
         if {k: norm(v) for k, v in (o.get("match") or {}).items()} != want:
             continue
         limit = o.get("limit")
-        # CONTRACT: limit None means "no amount cap".
+        # limit None means "no amount cap".
         if limit is None or amount is None or Decimal(str(limit)) >= amount:
             return True
     return False
@@ -267,7 +267,7 @@ def not_in_source(fields: dict, ctx: dict) -> tuple[str, str, str] | None:
         problems.append(f"amount {raw!r} is not a number")
     else:
         found = money_in(text)
-        # CONTRACT: compared by absolute value, so a credit entered as -450.00 still matches "$450.00".
+        # compared by absolute value, so a credit entered as -450.00 still matches "$450.00".
         if abs(amount) not in {abs(f) for f in found}:
             seen = ", ".join(format(f, ".2f") for f in found) or "no amounts"
             problems.append(f"amount {amount:.2f} not found in {_where(ctx)} (found: {seen})")
@@ -395,7 +395,7 @@ def _notification_lookup(fields: dict) -> tuple[bool, str]:
 
 def _catalog_column(fields: dict, base: str | None = None) -> tuple[dict | None, str]:
     """(column row from /api/catalog/columns, problem) for a column_tag proposal."""
-    # CONTRACT: the tag form carries the table as a hidden field, and the agent proposes only the fields its
+    # the tag form carries the table as a hidden field, and the agent proposes only the fields its
     # snapshot shows (column, tag). Without a table the column is looked up across the catalog; it must be unique.
     table, column = _clean(fields.get("table")), _clean(fields.get("column"))
     if not column:
@@ -451,7 +451,7 @@ EXISTS: dict[str, Callable[[dict], bool]] = {
     "notification": lambda fields: _notification_lookup(fields)[0],
     "column_tag": lambda fields: _column_tag_lookup(fields)[0],
 }
-# CONTRACT: addition — human-readable proof for gateway.confirm's "evidence".
+# human-readable proof for gateway.confirm's "evidence".
 EVIDENCE: dict[str, Callable[[dict], str]] = {
     "invoice": lambda fields: _invoice_lookup(fields)[1],
     "notification": lambda fields: _notification_lookup(fields)[1],

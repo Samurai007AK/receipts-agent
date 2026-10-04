@@ -56,7 +56,7 @@ def rules(base: str, env: dict[str, str]) -> None:
     check(a["status"] == "ALLOWED" and a["rule_id"] is None and a["ref"] == "INV-1042", f"clean INV-1042 ALLOWED: {a}")
     canonical = json.dumps({k: norm(v) for k, v in CLEAN.items()}, sort_keys=True)
     want_id = "P-" + hashlib.sha256(f"invoice|{canonical}".encode()).hexdigest()[:10]
-    check(a["proposal_id"] == want_id, f"proposal_id follows CONTRACT 2.3 ({want_id})")
+    check(a["proposal_id"] == want_id, f"proposal_id is the stable hash of kind and fields ({want_id})")
     b = gateway.propose("r2", "invoice", {"vendor": " acme corp", "invoice_no": "inv-1042", "amount": "$1,240.00",
                                           "due_date": "2 November 2026"}, "3")
     check(b["proposal_id"] == a["proposal_id"] and b["status"] == "ALLOWED", "same intent, other formatting/run -> same id")

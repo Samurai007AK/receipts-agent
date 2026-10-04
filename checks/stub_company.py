@@ -1,4 +1,4 @@
-"""Minimal stand-in for the company app's JSON API (docs/CONTRACT.md section 1.3).
+"""Minimal stand-in for the company app's JSON API.
 
 Used by referee and gateway self-checks so they can run without the real app.
 Test-only hooks under /stub/* add rows directly.

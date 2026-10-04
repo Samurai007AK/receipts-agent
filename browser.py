@@ -1,6 +1,6 @@
 """Browser tools for the Receipts agent: a Playwright (sync, Chromium) session on the company app.
 
-Registers four gateway tools (CONTRACT section 4): `goto` and `read_page` (read), `click` and
+Registers four gateway tools: `goto` and `read_page` (read), `click` and
 `fill_form` (write). Every result starts with one `<STATUS>: <summary>` line, then detection lines
 (`DETECTED: ...`), then a compact text snapshot of the page for the LLM. A click on a submit control
 inside a `form[data-record]` is guarded: the form's values must match an allowed proposal
@@ -93,7 +93,7 @@ _SCAN_JS = r"""
         field.value = el.selectedOptions.length ? clean(el.selectedOptions[0].label) : '';
       }
       if (el.type === 'checkbox' || el.type === 'radio') field.value = el.checked ? 'checked' : 'unchecked';
-      if (el.type === 'password') field.value = el.value ? '***' : '';  // CONTRACT: secrets never reach the LLM
+      if (el.type === 'password') field.value = el.value ? '***' : '';  // secrets never reach the LLM
       fields.push(field);
     }
     forms.push({record: f.getAttribute('data-record') || '', action: rel(f.action), fields, buttons});
@@ -316,7 +316,7 @@ class Browser:
                 else:
                     lines.append("NOTE: login required (sign in with the username and password you were given)")
             elif d["alerts"] and self.status is not None and 400 <= self.status < 500:
-                # CONTRACT: a rejected sign-in (401 + alert) is reported like any other rejected form.
+                # a rejected sign-in (401 + alert) is reported like any other rejected form.
                 lines.append("DETECTED: validation_error: " + _cut("; ".join(d["alerts"]), 400))
             self.logged_in = False
         else:
@@ -345,7 +345,7 @@ class Browser:
         except PlaywrightError as e:
             return f"ERROR: could not open {raw}: {_first_line(e)}"
         d = self._scan()
-        # CONTRACT: a page that loaded is OK even with HTTP 4xx/5xx; the DETECTED lines carry the problem.
+        # a page that loaded is OK even with HTTP 4xx/5xx; the DETECTED lines carry the problem.
         lines = [f"OK: {self._path()} (HTTP {self.status})", *self._detect(d, expect_login)]
         return "\n".join([*lines, self._format(d)])
 
@@ -372,7 +372,7 @@ class Browser:
         el = self._resolve(target) if target else None
         if el is None:
             d = self._scan()
-            # CONTRACT: the "list of visible button/link names" is two lines, AVAILABLE BUTTONS and AVAILABLE LINKS.
+            # the "list of visible button/link names" is two lines, AVAILABLE BUTTONS and AVAILABLE LINKS.
             buttons = [b for f in d["forms"] for b in f["buttons"]] + d["other"]
             return "\n".join([
                 f'ERROR: no clickable element named "{target}"',
@@ -422,7 +422,7 @@ class Browser:
                 else:
                     lines.append(f"NOTE: submitted but not found in the system of record yet: {done['evidence']}")
             else:
-                # CONTRACT: when the submit is not confirmed, a NOTE line says so (no VERIFIED line).
+                # when the submit is not confirmed, a NOTE line says so (no VERIFIED line).
                 lines.append("NOTE: the submit did not go through; nothing was recorded by this click")
         return "\n".join([*lines, self._format(d)])
 
