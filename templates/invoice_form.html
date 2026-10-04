@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}New invoice{% endblock %}
+{% block content %}
+<h1>New invoice</h1>
+<p class="muted">Post a vendor invoice to the AP ledger.</p>
+{% include "_alerts.html" %}
+<div class="card">
+  <form class="record" method="post" action="/invoices/new" data-record="invoice">
+    <div class="field">
+      <label for="vendor">Vendor</label>
+      <input type="text" id="vendor" name="vendor" value="{{ values.vendor }}">
+    </div>
+    <div class="field">
+      <label for="invoice_no">Invoice number</label>
+      <input type="text" id="invoice_no" name="invoice_no" value="{{ values.invoice_no }}">
+    </div>
+    <div class="field">
+      <label for="amount">Amount</label>
+      <input type="text" id="amount" name="amount" value="{{ values.amount }}" placeholder="0.00">
+    </div>
+    <div class="field">
+      <label for="due_date">Due date</label>
+      <input type="text" id="due_date" name="due_date" value="{{ values.due_date }}" placeholder="{{ date_format }}">
+    </div>
+    {% set submit_label = "Save" %}{% include "_submit.html" %}
+  </form>
+</div>
+{% endblock %}

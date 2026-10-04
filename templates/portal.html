@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Company portal{% endblock %}
+{% block content %}
+<h1>Company portal</h1>
+<p class="muted">Accounts payable workspace for the {{ company }} finance team.</p>
+<div class="tiles">
+  <div class="card"><a href="/inbox">Inbox</a><p class="muted">{{ inbox_count }} emails in the AP mailbox</p></div>
+  <div class="card"><a href="/invoices">Invoices</a><p class="muted">{{ open_count }} open in the AP ledger</p></div>
+  <div class="card"><a href="/invoices/new">New invoice</a><p class="muted">Post a vendor invoice to the ledger</p></div>
+  <div class="card"><a href="/notify">Notify</a><p class="muted">Send a message to a colleague</p></div>
+</div>
+{% endblock %}

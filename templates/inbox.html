@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Inbox{% endblock %}
+{% block content %}
+<h1>Inbox</h1>
+<p class="muted">Accounts payable mailbox, newest first.</p>
+<table>
+  <thead><tr><th>From</th><th>Subject</th><th>Received</th></tr></thead>
+  <tbody>
+  {% for m in emails %}
+    <tr><td>{{ m.from }}</td><td><a href="/inbox/{{ m.id }}">{{ m.subject }}</a></td><td>{{ m.received }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

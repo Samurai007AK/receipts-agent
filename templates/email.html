@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ email.subject }}{% endblock %}
+{% block content %}
+<p><a href="/inbox">&larr; Back to inbox</a></p>
+<div class="card">
+  <h1>{{ email.subject }}</h1>
+  <dl class="facts">
+    <dt>From</dt><dd>{{ email.from }}</dd>
+    <dt>Subject</dt><dd>{{ email.subject }}</dd>
+    <dt>Received</dt><dd>{{ email.received }}</dd>
+  </dl>
+  <pre class="body">{{ email.body }}</pre>
+</div>
+{% endblock %}

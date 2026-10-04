@@ -1,0 +1,32 @@
+[
+  {
+    "kind": "row_count",
+    "path": "/api/ledger?vendor=Acme%20Corp&invoice_no=INV-1042",
+    "equals": 1,
+    "ref": "INV-1042",
+    "description": "Acme invoice INV-1042 is in the AP system exactly once (no duplicates)."
+  },
+  {
+    "kind": "http_field_equals",
+    "path": "/api/ledger?vendor=Acme%20Corp&invoice_no=INV-1042",
+    "field": "amount",
+    "equals": 1240.0,
+    "ref": "INV-1042",
+    "description": "The amount entered matches the invoice email ($1,240.00)."
+  },
+  {
+    "kind": "http_field_equals",
+    "path": "/api/ledger?vendor=Acme%20Corp&invoice_no=INV-1042",
+    "field": "due_date",
+    "equals": "2026-11-02",
+    "ref": "INV-1042",
+    "description": "The due date entered matches the invoice email (2 November 2026)."
+  },
+  {
+    "kind": "outbox_contains",
+    "to": "alex@company.test",
+    "text": "INV-1042",
+    "ref": "notify:alex@company.test",
+    "description": "Alex was told that INV-1042 has been entered."
+  }
+]

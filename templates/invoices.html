@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Invoices{% endblock %}
+{% block content %}
+<h1>Invoices</h1>
+<p class="muted">AP ledger. <a href="/invoices/new">Post a new invoice</a></p>
+<table>
+  <thead><tr><th>Vendor</th><th>Invoice number</th><th class="num">Amount</th><th>Due date</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>{{ r.vendor }}</td>
+      <td><a href="/invoices/{{ r.id }}">{{ r.invoice_no }}</a></td>
+      <td class="num">{{ r.amount | money }}</td>
+      <td>{{ r.due_date }}</td>
+      <td><span class="status {{ r.status }}">{{ r.status }}</span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

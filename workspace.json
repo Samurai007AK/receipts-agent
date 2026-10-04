@@ -1,0 +1,7 @@
+{
+  "company": "Brightline Co.",
+  "portal_path": "/",
+  "user": {"name": "Alex Rivera", "email": "alex@company.test", "role": "AP lead"},
+  "internal_domain": "company.test",
+  "vault": {"company apps": {"username": "clerk", "password": "receipts123"}}
+}

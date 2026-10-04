@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Notify{% endblock %}
+{% block content %}
+<h1>Notify</h1>
+<p class="muted">Send a message to a colleague.</p>
+{% if sent_to %}<div class="notice" role="status">Message sent to {{ sent_to }}</div>{% endif %}
+{% include "_alerts.html" %}
+<div class="card">
+  <form class="record" method="post" action="/notify" data-record="notification">
+    <div class="field">
+      <label for="to">To</label>
+      <input type="text" id="to" name="to" value="{{ values.to }}" placeholder="name@{{ internal_domain }}">
+    </div>
+    <div class="field">
+      <label for="subject">Subject</label>
+      <input type="text" id="subject" name="subject" value="{{ values.subject }}">
+    </div>
+    <div class="field">
+      <label for="body">Message</label>
+      <textarea id="body" name="body">{{ values.body }}</textarea>
+    </div>
+    {% set submit_label = "Send" %}{% include "_submit.html" %}
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Invoice {{ row.invoice_no }}{% endblock %}
+{% block content %}
+{% if posted %}<div class="notice" role="status">Invoice posted</div>{% endif %}
+<p><a href="/invoices">&larr; Back to invoices</a></p>
+<div class="card">
+  <h1>Invoice {{ row.invoice_no }}</h1>
+  <dl class="facts">
+    <dt>Vendor</dt><dd>{{ row.vendor }}</dd>
+    <dt>Invoice number</dt><dd>{{ row.invoice_no }}</dd>
+    <dt>Amount</dt><dd>{{ row.amount | money }}</dd>
+    <dt>Due date</dt><dd>{{ row.due_date }}</dd>
+    <dt>Status</dt><dd><span class="status {{ row.status }}">{{ row.status }}</span></dd>
+    <dt>Source</dt><dd>{{ row.source }}</dd>
+    <dt>Created</dt><dd>{{ row.created_at }}</dd>
+  </dl>
+</div>
+{% endblock %}

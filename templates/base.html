@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ title or "Portal" }}{% endblock %} · {{ company }}</title>
+<style>
+  :root {
+    --ink: #1f2933; --muted: #616e7c; --line: #d9e2ec; --bg: #f5f7fa; --card: #ffffff;
+    --brand: #1d4e89; --brand-dark: #163d6b; --error-bg: #fdecea; --error-ink: #8a1c13;
+    --notice-bg: #e6f4ea; --notice-ink: #1e5631;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+         color: var(--ink); background: var(--bg); }
+  header.top { background: var(--brand); color: #fff; }
+  header.top .bar { max-width: 1040px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center;
+                    gap: 24px; min-height: 56px; flex-wrap: wrap; }
+  .brand { font-weight: 700; font-size: 17px; letter-spacing: .2px; color: #fff; text-decoration: none; }
+  nav.main { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
+  nav.main a { color: #dbe7f5; text-decoration: none; padding: 6px 12px; border-radius: 6px; }
+  nav.main a:hover { background: rgba(255,255,255,.12); color: #fff; }
+  nav.main a[aria-current="page"] { background: rgba(255,255,255,.2); color: #fff; }
+  nav.main .signout { margin-left: auto; }
+  .who { color: #dbe7f5; font-size: 13px; }
+  main { max-width: 1040px; margin: 28px auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 16px; }
+  h2 { font-size: 18px; margin: 24px 0 12px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px 24px;
+          box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+  .muted { color: var(--muted); }
+  a { color: var(--brand); }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line);
+          border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: #eef2f7; font-size: 13px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: #f8fafc; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .status { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 13px; background: #e4e7eb; }
+  .status.open { background: #fff3c4; color: #7a5b00; }
+  .status.paid { background: var(--notice-bg); color: var(--notice-ink); }
+  .error, .notice { padding: 12px 16px; border-radius: 8px; margin: 0 0 12px; border: 1px solid; }
+  .error { background: var(--error-bg); color: var(--error-ink); border-color: #f5c2bd; }
+  .notice { background: var(--notice-bg); color: var(--notice-ink); border-color: #b7dfc3; }
+  form.record, form.login { max-width: 560px; }
+  .field { margin-bottom: 16px; }
+  label { display: block; font-weight: 600; margin-bottom: 6px; }
+  input[type=text], input[type=password], input[type=number], textarea {
+    width: 100%; padding: 9px 11px; font: inherit; border: 1px solid #bcccdc; border-radius: 6px; background: #fff; }
+  input:focus, textarea:focus { outline: 2px solid #9fc3ea; border-color: var(--brand); }
+  textarea { min-height: 140px; resize: vertical; }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  button { font: inherit; padding: 9px 20px; border-radius: 6px; border: 1px solid var(--brand-dark);
+           background: var(--brand); color: #fff; cursor: pointer; }
+  button:hover { background: var(--brand-dark); }
+  button.secondary { background: #fff; color: var(--brand); border-color: #bcccdc; }
+  details.more { display: inline-block; border: 1px solid #bcccdc; border-radius: 6px; background: #fff; padding: 6px 12px; }
+  details.more summary { cursor: pointer; color: var(--muted); }
+  details.more[open] summary { margin-bottom: 8px; }
+  dl.facts { display: grid; grid-template-columns: 140px 1fr; gap: 8px 16px; margin: 0; }
+  dl.facts dt { color: var(--muted); }
+  dl.facts dd { margin: 0; }
+  pre.body { white-space: pre-wrap; word-wrap: break-word; font: 14px/1.6 Consolas, "Courier New", monospace;
+             background: #fbfcfe; border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin: 16px 0 0; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+  .tiles .card a { font-weight: 600; font-size: 16px; }
+  .tiles .card p { margin: 6px 0 0; }
+  .center { max-width: 420px; margin: 72px auto; }
+  {% block style %}{% endblock %}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <a class="brand" href="/">{{ company }}</a>
+    {% if user and not hide_nav %}
+    <nav class="main" aria-label="Main">
+      {% for href, label in [("/inbox", "Inbox"), ("/invoices", "Invoices"), ("/invoices/new", "New invoice"), ("/notify", "Notify")] %}
+      <a href="{{ href }}"{% if active == href %} aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+      <a class="signout" href="/logout">Sign out</a>
+    </nav>
+    <span class="who">Signed in as {{ user }}</span>
+    {% endif %}
+  </div>
+</header>
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>
