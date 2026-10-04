@@ -46,9 +46,9 @@
   form.record, form.login { max-width: 560px; }
   .field { margin-bottom: 16px; }
   label { display: block; font-weight: 600; margin-bottom: 6px; }
-  input[type=text], input[type=password], input[type=number], textarea {
+  input[type=text], input[type=password], input[type=number], textarea, select {
     width: 100%; padding: 9px 11px; font: inherit; border: 1px solid #bcccdc; border-radius: 6px; background: #fff; }
-  input:focus, textarea:focus { outline: 2px solid #9fc3ea; border-color: var(--brand); }
+  input:focus, textarea:focus, select:focus { outline: 2px solid #9fc3ea; border-color: var(--brand); }
   textarea { min-height: 140px; resize: vertical; }
   .hint { font-size: 13px; color: var(--muted); margin-top: 4px; }
   button { font: inherit; padding: 9px 20px; border-radius: 6px; border: 1px solid var(--brand-dark);
@@ -67,6 +67,10 @@
   .tiles .card a { font-weight: 600; font-size: 16px; }
   .tiles .card p { margin: 6px 0 0; }
   .center { max-width: 420px; margin: 72px auto; }
+  .chip { display: inline-block; padding: 0 8px; margin: 0 4px 2px 0; border-radius: 999px; font-size: 12px;
+          font-weight: 600; letter-spacing: .3px; background: #e3ecf7; color: var(--brand-dark); }
+  .chip.pii { background: var(--error-bg); color: var(--error-ink); }
+  code { font: 13px Consolas, "Courier New", monospace; }
   {% block style %}{% endblock %}
 </style>
 </head>
@@ -76,7 +80,7 @@
     <a class="brand" href="/">{{ company }}</a>
     {% if user and not hide_nav %}
     <nav class="main" aria-label="Main">
-      {% for href, label in [("/inbox", "Inbox"), ("/invoices", "Invoices"), ("/invoices/new", "New invoice"), ("/notify", "Notify")] %}
+      {% for href, label in [("/inbox", "Inbox"), ("/invoices", "Invoices"), ("/invoices/new", "New invoice"), ("/notify", "Notify"), ("/catalog", "Catalog")] %}
       <a href="{{ href }}"{% if active == href %} aria-current="page"{% endif %}>{{ label }}</a>
       {% endfor %}
       <a class="signout" href="/logout">Sign out</a>

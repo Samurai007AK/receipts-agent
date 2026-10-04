@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "http_field_contains",
+    "path": "/api/catalog/columns?table=customers&column=email",
+    "field": "tags",
+    "contains": "PII",
+    "ref": "customers.email",
+    "description": "The email column of the customers table is tagged PII in the data catalog."
+  },
+  {
+    "kind": "outbox_contains",
+    "to": "priya.shah@company.test",
+    "text": "PII",
+    "ref": "notify:priya.shah@company.test",
+    "description": "Priya Shah, the owner of the customers table, was told about the PII tag."
+  }
+]

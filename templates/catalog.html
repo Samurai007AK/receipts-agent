@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Data catalog{% endblock %}
+{% block content %}
+<h1>Data catalog</h1>
+<p class="muted">Tables in the {{ company }} warehouse, who owns them, and how their columns are classified.</p>
+<table>
+  <thead><tr><th>Table</th><th>Owner</th><th>Description</th><th class="num">Columns</th></tr></thead>
+  <tbody>
+  {% for name, t in tables.items() %}
+    <tr>
+      <td><a href="/catalog/{{ name }}">{{ name }}</a></td>
+      <td>{{ t.owner }}</td>
+      <td>{{ t.description }}</td>
+      <td class="num">{{ t.columns | length }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

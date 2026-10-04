@@ -1,6 +1,6 @@
 """Receipts policy: the deterministic, domain-specific rules the gateway enforces.
 
-Everything that knows about invoices, vendors, money, dates and mail lives here;
+Everything that knows about invoices, vendors, money, dates, mail and the data catalog lives here;
 gateway.py is a generic engine that calls into this module. Rules reach the company
 app only through its read-only JSON API (docs/CONTRACT.md 1.3), with short timeouts.
 """
@@ -391,20 +391,74 @@ def _notification_lookup(fields: dict) -> tuple[bool, str]:
     return bool(msgs), evidence
 
 
+# ---------------------------------------------------------------- data catalog (column_tag)
+
+def _catalog_column(fields: dict, base: str | None = None) -> tuple[dict | None, str]:
+    """(column row from /api/catalog/columns, problem) for a column_tag proposal."""
+    # CONTRACT: the tag form carries the table as a hidden field, and the agent proposes only the fields its
+    # snapshot shows (column, tag). Without a table the column is looked up across the catalog; it must be unique.
+    table, column = _clean(fields.get("table")), _clean(fields.get("column"))
+    if not column:
+        return None, "column is missing (fields: column, tag)"
+    rows = _get("/api/catalog/columns", {"table": table, "column": column}, base=base)
+    if len(rows) == 1:
+        return rows[0], ""
+    if rows:
+        tables = ", ".join(r["table"] for r in rows)
+        return None, (f"column {column} exists in several tables ({tables}); "
+                      "propose from that table's page with its table field")
+    where = f"table {table}" if table else "any catalog table"
+    return None, f"column {column} does not exist in {where}"
+
+
+def _column_tag_lookup(fields: dict) -> tuple[bool, str]:
+    row, problem = _catalog_column(fields)
+    if row is None:
+        return False, problem
+    tag, tags = _clean(fields.get("tag")), [str(t) for t in row.get("tags") or []]
+    evidence = (f"GET /api/catalog/columns?table={row['table']}&column={row['column']} -> "
+                f"tags {', '.join(tags) or '(none)'}")
+    return bool(tag) and norm(tag) in {norm(t) for t in tags}, evidence
+
+
+def _column_ref(fields: dict) -> str:
+    table, column = _clean(fields.get("table")), _clean(fields.get("column"))
+    if not table:
+        try:
+            row, _ = _catalog_column(fields)
+        except (httpx.HTTPError, ValueError, KeyError):
+            row = None  # REF must never raise; the rules report an unreachable catalog
+        table = row["table"] if row else ""
+        column = row["column"] if row else column
+    return f"{table}.{column}" if table else column
+
+
+def unknown_column(fields: dict, ctx: dict) -> tuple[str, str, str] | None:
+    row, problem = _catalog_column(fields, ctx.get("app_url"))
+    if row is not None:
+        return None
+    return ("BLOCKED", "unknown-column",
+            f"{problem}; only existing catalog columns can be tagged (see /api/catalog/columns)")
+
+
 RULES: dict[str, list[Callable[[dict, dict], tuple[str, str, str] | None]]] = {
     "invoice": [not_in_source, vendor_not_allowlisted, sender_mismatch, credit_note, over_threshold],
     "notification": [external_recipient],
+    "column_tag": [unknown_column],
 }
 EXISTS: dict[str, Callable[[dict], bool]] = {
     "invoice": lambda fields: _invoice_lookup(fields)[0],
     "notification": lambda fields: _notification_lookup(fields)[0],
+    "column_tag": lambda fields: _column_tag_lookup(fields)[0],
 }
 # CONTRACT: addition — human-readable proof for gateway.confirm's "evidence".
 EVIDENCE: dict[str, Callable[[dict], str]] = {
     "invoice": lambda fields: _invoice_lookup(fields)[1],
     "notification": lambda fields: _notification_lookup(fields)[1],
+    "column_tag": lambda fields: _column_tag_lookup(fields)[1],
 }
 REF: dict[str, Callable[[dict], str]] = {
     "invoice": lambda fields: _clean(fields.get("invoice_no")),
     "notification": lambda fields: "notify:" + _clean(fields.get("to")),
+    "column_tag": _column_ref,
 }

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Table {{ table }}{% endblock %}
+{% block content %}
+{% if tagged %}<div class="notice" role="status">{{ tagged }}</div>{% endif %}
+<p><a href="/catalog">&larr; Back to the catalog</a></p>
+<div class="card">
+  <h1>Table {{ table }}</h1>
+  <dl class="facts">
+    <dt>Owner</dt><dd>{{ meta.owner }}</dd>
+    <dt>Description</dt><dd>{{ meta.description }}</dd>
+  </dl>
+</div>
+<h2>Columns</h2>
+<table>
+  <thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Tags</th></tr></thead>
+  <tbody>
+  {% for name, c in meta.columns.items() %}
+    <tr>
+      <td><code>{{ name }}</code></td>
+      <td>{{ c.type }}</td>
+      <td>{{ c.description }}</td>
+      <td>{% for t in c.tags %}<span class="chip{% if t == 'PII' %} pii{% endif %}">{{ t }}</span>{% else %}<span class="muted">none</span>{% endfor %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<h2>Tag a column</h2>
+{% include "_alerts.html" %}
+<div class="card">
+  <form class="record" method="post" action="/catalog/{{ table }}/tags" data-record="column_tag">
+    <input type="hidden" name="table" value="{{ table }}">
+    <div class="field">
+      <label for="column">Column</label>
+      <select id="column" name="column">
+        <option value="">Choose a column</option>
+        {% for name in meta.columns %}
+        <option value="{{ name }}"{% if values.column == name %} selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="tag">Tag</label>
+      <input type="text" id="tag" name="tag" value="{{ values.tag }}" placeholder="e.g. PII">
+      <div class="hint">Tags are stored in upper case, for example PII, GDPR or FK.</div>
+    </div>
+    {% set submit_label = "Save" %}{% include "_submit.html" %}
+  </form>
+</div>
+{% endblock %}
